@@ -53,7 +53,7 @@ public class StormStreamingTest {
 			long spoutEmitDelay = (long) jsonSpoutConfigObject.get("emit_delay_in_ms");
 			long spoutEmitSizeInMBs = (long) jsonSpoutConfigObject.get("emit_size_in_mbs");
 			long parallalizationCount = (long) jsonSpoutConfigObject.get("parallel_count_hint");
-			builder.setSpout(spoutName,new SpoutCustomData(spoutName,(int)spoutEmitDelay,(int)spoutEmitSizeInMBs),parallalizationCount);
+			builder.setSpout(spoutName,new SpoutDataGenerator(spoutName,(int)spoutEmitDelay,(int)spoutEmitSizeInMBs),parallalizationCount);
 		}
 
 		int addedBoltCount=0;
@@ -63,11 +63,11 @@ public class StormStreamingTest {
 			long boltEmitSizeInMBs = (long) jsonBoltConfigObject.get("emit_size_in_mbs");
 			long parallalizationCount = (long) jsonBoltConfigObject.get("parallel_count_hint");
 			String shuffleGroupingKey = (String) jsonBoltConfigObject.get("shuffle_grouping");
-			BoltCustomData bolt = null;
+			BoltDataGenerator bolt = null;
 			if(addedBoltCount+1 == jsonBoltssConfigObject.size()){
-				bolt = new BoltCustomData(boltName,(int)boltEmitSizeInMBs,false);
+				bolt = new BoltDataGenerator(boltName,(int)boltEmitSizeInMBs,false);
 			}else{
-				bolt = new BoltCustomData(boltName,(int)boltEmitSizeInMBs,true);
+				bolt = new BoltDataGenerator(boltName,(int)boltEmitSizeInMBs,true);
 			}
 			builder.setBolt(boltName,bolt,parallalizationCount).shuffleGrouping(shuffleGroupingKey);
 			++addedBoltCount;
@@ -110,11 +110,6 @@ public class StormStreamingTest {
 			//		      config.put(Config.TOPOLOGY_TRANSFER_BUFFER_SIZE,
 			//		      new Integer(32));
 
-			ArrayList<String> arrayList = new ArrayList<>();
-			arrayList.add("com.ripl.ricoh.test.MyData: com.ripl.ricoh.test.KryoMyDataSerializer");
-			conf.registerSerialization(MyData.class,KryoMyDataSerializer.class);
-			
-			conf.put(Config.TOPOLOGY_FALL_BACK_ON_JAVA_SERIALIZATION, false);
 			StormSubmitter.submitTopology(topologyName, conf, builder.createTopology());
 		}
 
